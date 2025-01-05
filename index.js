@@ -6,7 +6,7 @@ import cors from "cors";
 const app = express();
 
 app.use(cors({
-  origin: "*", // Gerektiği şekilde yapılandırın
+  origin: "*", // Gerektiği şekilde yapılandırma
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
   credentials: true,
@@ -22,9 +22,9 @@ const server = createServer(app);
 // Socket.IO server oluşturma
 const io = new Server(server, {
   cors: {
-    origin: "*", // Gerektiği şekilde yapılandırın
+    origin: "*", // Gerektiği şekilde yapılandırma
   },
-  transports: ["websocket", "polling"], // Her iki transport türünü ekleyin
+  transports: ["websocket", "polling"], // Her iki transport türü
 });
 
 // Socket.IO bağlantıları
