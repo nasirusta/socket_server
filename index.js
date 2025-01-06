@@ -37,18 +37,17 @@ io.on("connection", (socket) => {
 
   // Mesaj alma ve gönderme
   socket.on("message", (data) => {
-    if (!data.message) {
+    // Mesaj artık direkt string olarak geliyor
+    if (!data) {
       console.log("Hatalı mesaj formatı:", data);
       return;
     }
     
-    console.log(`Mesaj ${socket.id} tarafından gönderildi: ${data.message}`);
-    // Test amaçlı - mesajın gönderildiğini doğrula
-    console.log("Mesaj tüm kullanıcılara gönderiliyor...");
+    console.log(`Mesaj ${socket.id} tarafından gönderildi: ${data}`);
     
     // Tüm bağlı kullanıcılara mesajı gönder
     io.emit("messageReturn", {
-      message: data.message,
+      text: data,
       senderId: socket.id,
       timestamp: new Date().toISOString()
     });
