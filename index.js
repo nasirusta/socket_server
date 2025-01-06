@@ -30,6 +30,10 @@ const io = new Server(server, {
 // Socket.IO bağlantıları
 io.on("connection", (socket) => {
   console.log(`Kullanıcı bağlandı ID: ${socket.id}`);
+  
+  // Bağlı kullanıcı sayısını konsola yazdır
+  const connectedClients = io.sockets.sockets.size;
+  console.log(`Toplam bağlı kullanıcı sayısı: ${connectedClients}`);
 
   // Mesaj alma ve gönderme
   socket.on("message", (data) => {
@@ -39,15 +43,20 @@ io.on("connection", (socket) => {
     }
     
     console.log(`Mesaj ${socket.id} tarafından gönderildi: ${data.message}`);
+    // Test amaçlı - mesajın gönderildiğini doğrula
+    console.log("Mesaj tüm kullanıcılara gönderiliyor...");
+    
     // Tüm bağlı kullanıcılara mesajı gönder
     io.emit("messageReturn", {
       message: data.message,
-      senderId: socket.id
+      senderId: socket.id,
+      timestamp: new Date().toISOString()
     });
   });
 
   socket.on("disconnect", () => {
     console.log(`Kullanıcı ayrıldı ID: ${socket.id}`);
+    console.log(`Kalan kullanıcı sayısı: ${io.sockets.sockets.size}`);
   });
 });
 
