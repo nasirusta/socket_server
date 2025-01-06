@@ -31,14 +31,19 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`Kullanıcı bağlandı ID: ${socket.id}`);
 
-  socket.on("room", (data) => {
-    console.log(`Odaya katılım: ${data}`);
-    socket.join(data);
-  });
-
+  // Mesaj alma ve gönderme
   socket.on("message", (data) => {
-    console.log(`Mesaj ${socket.id} tarafından oda ${data.room}'a: ${data.message}`);
-    io.to(data.room).emit("messageReturn", data.message);
+    if (!data.message) {
+      console.log("Hatalı mesaj formatı:", data);
+      return;
+    }
+    
+    console.log(`Mesaj ${socket.id} tarafından gönderildi: ${data.message}`);
+    // Tüm bağlı kullanıcılara mesajı gönder
+    io.emit("messageReturn", {
+      message: data.message,
+      senderId: socket.id
+    });
   });
 
   socket.on("disconnect", () => {
