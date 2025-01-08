@@ -27,35 +27,52 @@ const io = new Server(server, {
   transports: ["websocket", "polling"], // Her iki transport türü
 });
 
+// Bağlı kullanıcıları tutmak için bir Map
+const connectedUsers = new Map();
+
 // Socket.IO bağlantıları
 io.on("connection", (socket) => {
   console.log(`Kullanıcı bağlandı ID: ${socket.id}`);
   
-  // Bağlı kullanıcı sayısını konsola yazdır
-  const connectedClients = io.sockets.sockets.size;
-  console.log(`Toplam bağlı kullanıcı sayısı: ${connectedClients}`);
-
+  // Kullanıcı bilgilerini al
+  const { userId, displayName } = socket.handshake.query;
+  
+  // Kullanıcıyı bağlı kullanıcılar listesine ekle
+  connectedUsers.set(socket.id, {
+    userId,
+    displayName,
+    socketId: socket.id
+  });
+  
+  // Tüm kullanıcılara güncel kullanıcı listesini gönder
+  io.emit("userJoined", Array.from(connectedUsers.values()));
+  
   // Mesaj alma ve gönderme
   socket.on("message", (data) => {
-    // Mesaj artık direkt string olarak geliyor
     if (!data) {
       console.log("Hatalı mesaj formatı:", data);
       return;
     }
     
-    console.log(`Mesaj ${socket.id} tarafından gönderildi: ${data}`);
+    const user = connectedUsers.get(socket.id);
+    console.log(`Mesaj ${user.displayName} tarafından gönderildi: ${data}`);
     
-    // Tüm bağlı kullanıcılara mesajı gönder
     io.emit("messageReturn", {
       text: data,
       senderId: socket.id,
+      senderName: user.displayName,
       timestamp: new Date().toISOString()
     });
   });
 
   socket.on("disconnect", () => {
+    // Kullanıcıyı listeden çıkar
+    connectedUsers.delete(socket.id);
     console.log(`Kullanıcı ayrıldı ID: ${socket.id}`);
-    console.log(`Kalan kullanıcı sayısı: ${io.sockets.sockets.size}`);
+    
+    // Diğer kullanıcılara bildir
+    io.emit("userLeft", socket.id);
+    io.emit("userJoined", Array.from(connectedUsers.values()));
   });
 });
 
